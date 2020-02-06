@@ -40,9 +40,9 @@ def save_value(values):
 
 def save_as_json(file_list,path):
         
-    reg = {}
-
     for file_name in file_list:
+
+        reg = {}
 
         try:
             with open(file_name, 'r') as f:

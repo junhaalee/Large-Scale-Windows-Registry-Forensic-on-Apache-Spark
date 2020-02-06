@@ -40,7 +40,7 @@ def querykey(key):
     value_pairs = []
 
     for k in key:
-        if type(sample[k]) == dict:
+        if type(key[k]) == dict:
             subkey.append(k)
         elif type(key[k]) == str:
             value_pairs.append({k:key[k]})
@@ -81,7 +81,9 @@ def enumvalue(key):
 
     return value_pairs
 
+def keyword_search(keyword):
 
+    return location
 
 if __name__ == "__main__":
 
