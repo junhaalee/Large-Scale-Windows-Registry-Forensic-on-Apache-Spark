@@ -34,6 +34,7 @@ def openkey(key):
     return data
 
 
+
 def querykey(key):
 
     subkey = []
@@ -81,9 +82,15 @@ def enumvalue(key):
 
     return value_pairs
 
+
+
 def keyword_search(keyword):
 
     return location
+
+
+
+
 
 if __name__ == "__main__":
 
