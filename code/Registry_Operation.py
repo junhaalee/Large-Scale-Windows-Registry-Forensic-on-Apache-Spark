@@ -92,9 +92,16 @@ def keyword_search(keyword,data,loc,result):
 
         if type(data[key]) == str:
             if keyword in data[key]:
-                result.append({loc+'//'+key : data[key]})
+                if len(loc) >= 1:
+                    result.append({loc+'\\'+key : data[key]})
+                else:
+                    result.append({key : data[key]})
+
         else:
-            keyword_search(keyword,data[key],loc+'//'+key,result)
+            if len(loc) >= 1:
+                keyword_search(keyword,data[key],loc+'\\'+key,result)
+            else:
+                keyword_search(keyword,data[key],key,result)
     
     return result
 
@@ -117,6 +124,14 @@ if __name__ == "__main__":
 
     #openkey -> enumvalue
     print(enumvalue(openkey(key)))
+
+    #keyword search
+    with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/sample.json') as json_file: 
+        data = json.load(json_file) 
+    keyword = 'Storage'
+    result = keyword_search(keyword,data,'',[])
+    for res in result:
+        print(res)
 
 
 
