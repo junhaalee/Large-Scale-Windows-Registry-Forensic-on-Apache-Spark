@@ -27,7 +27,7 @@ def save_value(values):
         if value.split('=')[1][1] == '"':
             value_data = value.split('=')[1][1:-1]
         else:
-            value_data = value.split('=')[1]
+            value_data = value.split('=')[1][1:-1]
 
         if len(value_data) == 0:
             pair = {value_name : ' '}

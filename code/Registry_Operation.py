@@ -84,11 +84,19 @@ def enumvalue(key):
 
 
 
-def keyword_search(keyword):
+def keyword_search(keyword,data,loc,result):
 
-    return location
+    keys = list(data.keys())
 
+    for key in keys:
 
+        if type(data[key]) == str:
+            if keyword in data[key]:
+                result.append({loc+'//'+key : data[key]})
+        else:
+            keyword_search(keyword,data[key],loc+'//'+key,result)
+    
+    return result
 
 
 
@@ -107,10 +115,8 @@ if __name__ == "__main__":
     #openkey -> enumkey
     print(enumkey(openkey(key)))
 
-
     #openkey -> enumvalue
     print(enumvalue(openkey(key)))
-
 
 
 
