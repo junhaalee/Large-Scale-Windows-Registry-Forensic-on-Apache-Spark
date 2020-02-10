@@ -1,8 +1,5 @@
 # registry_Forensic
 
-
-## Processing bigdata(Windows Registry) using Hadoop and Spark
-
 ### Reg2Json.py
 #### export된 .reg 파일을 key-value 형태의 .json 파일로 변환(5개의 Registry Root Key에 각각 적용
 
