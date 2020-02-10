@@ -1,4 +1,6 @@
 import json
+import time
+
 
 '''
 Structure
@@ -90,7 +92,7 @@ def keyword_search(keyword,data,loc,result):
 
     for key in keys:
 
-        if type(data[key]) == str:
+        if type(data[key]) == unicode:
             if keyword in data[key]:
                 if len(loc) >= 1:
                     result.append({loc+'\\'+key : data[key]})
@@ -108,30 +110,35 @@ def keyword_search(keyword,data,loc,result):
 
 
 if __name__ == "__main__":
+    
+    start_time = time.time()
+
 
     key = 'HKEY_CLASSES_ROOT\\*'
     value_name = 'ConflictPrompt'
 
     #openkey -> querykey
-    print(querykey(openkey(key))[0])
-    print(querykey(openkey(key))[1])
+    # print(querykey(openkey(key))[0])
+    # print(querykey(openkey(key))[1])
 
     #openkey -> queryvalue -> closekey
-    print(queryvalue(openkey(key), value_name))
+    # print(queryvalue(openkey(key), value_name))
 
     #openkey -> enumkey
-    print(enumkey(openkey(key)))
+    # print(enumkey(openkey(key)))
 
     #openkey -> enumvalue
-    print(enumvalue(openkey(key)))
+    # print(enumvalue(openkey(key)))
 
     #keyword search
     with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/sample.json') as json_file: 
         data = json.load(json_file) 
-    keyword = 'Storage'
-    result = keyword_search(keyword,data,'',[])
-    for res in result:
-        print(res)
 
+    keywords = ['Storage','image']
 
+    for keyword in keywords:
+        keyword_search(keyword,data,'',[])
 
+    #time
+    finish_time = time.time()
+    print("time : "+str(finish_time-start_time))
