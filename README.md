@@ -1,10 +1,6 @@
 # registry_Forensic
 
-<<<<<<< HEAD
-Processing bigdata(Windows Registry) using Hadoop and Spark
 
-#
-=======
 ## Processing bigdata(Windows Registry) using Hadoop and Spark
 
 ### Reg2Json.py
@@ -15,4 +11,3 @@ Processing bigdata(Windows Registry) using Hadoop and Spark
 
 ### Registry_Operation_pyspark.py
 #### 분산환경에서 pyspark를 통해 Raw data(key-value 형태의 data) 처리
->>>>>>> f9b8b77bc931dff0b45206f8bb6dde03bbc38570
