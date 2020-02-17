@@ -92,7 +92,7 @@ def keyword_search(keyword,data,loc,result):
 
     for key in keys:
 
-        if type(data[key]) == unicode:
+        if type(data[key]) == str:
             if keyword in data[key]:
                 if len(loc) >= 1:
                     result.append({loc+'\\'+key : data[key]})
@@ -113,28 +113,28 @@ if __name__ == "__main__":
     
     start_time = time.time()
 
+    #setting
+    key = ''
+    value_name = ''
 
-    key = 'HKEY_CLASSES_ROOT\\*'
-    value_name = 'ConflictPrompt'
-
-    #openkey -> querykey
+    # #openkey -> querykey
     # print(querykey(openkey(key))[0])
     # print(querykey(openkey(key))[1])
 
-    #openkey -> queryvalue -> closekey
+    # #openkey -> queryvalue -> closekey
     # print(queryvalue(openkey(key), value_name))
 
-    #openkey -> enumkey
+    # #openkey -> enumkey
     # print(enumkey(openkey(key)))
 
-    #openkey -> enumvalue
+    # #openkey -> enumvalue
     # print(enumvalue(openkey(key)))
 
     #keyword search
-    with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/sample.json') as json_file: 
+    with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/HKEY_LOCAL_MACHINE.json') as json_file: 
         data = json.load(json_file) 
 
-    keywords = ['Storage','image']
+    keywords = ['sys','exe','file']
 
     for keyword in keywords:
         keyword_search(keyword,data,'',[])

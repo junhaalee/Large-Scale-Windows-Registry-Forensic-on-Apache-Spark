@@ -38,8 +38,9 @@ def save_value(values):
 
     return value_pair
 
+
 def save_as_json(file_list,path):
-        
+
     for file_name in file_list:
 
         reg = {}
@@ -59,7 +60,8 @@ def save_as_json(file_list,path):
                 values = sample.split('\n')[1:]
             except:
                 pass
-                
+            
+            #value_data가 여러줄에 걸쳐있는 경우 하나의 value_data로 만들어주기
             for i in range(len(values)-1,0,-1):
                 if '=' not in values[i]:
                     values[i-1] += values[i]
@@ -69,7 +71,6 @@ def save_as_json(file_list,path):
 
                 if ind == len(values):
                     break
-                
                 if '=' not in values[ind]:
                     del values[ind]
                 else:
@@ -94,8 +95,8 @@ def save_as_json(file_list,path):
         with open(path+'/'+name+'.json','w') as towrite:
             json.dump(reg,towrite,ensure_ascii=False)
 
+
 if __name__ == "__main__":
     path = '/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data'
     file_list = list_files_subdir(path,'reg')
     registry_json = save_as_json(file_list, path)
-
