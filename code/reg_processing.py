@@ -61,18 +61,10 @@ def multi2single(sample):
     return sample
 
 
-if if __name__ == "__main__":
+if __name__ == "__main__":
     
     path = "/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/test.reg"
     new_path = "/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/test_v.reg"
 
     result = mkunit(path)
 
-
-
-rdd = [{'a':{}},{'a':{'b':1}},{'a':{'c':2}}]
-
-def reduce_fuction(x,y):
-    return x.update(y)
-
-result = reduce_fuction(rdd[0],rdd[1])
