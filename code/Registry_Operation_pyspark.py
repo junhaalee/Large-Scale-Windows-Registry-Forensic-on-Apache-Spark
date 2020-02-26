@@ -2,47 +2,62 @@ from pyspark import SparkContext
 import time
 
 
-#Pre-Processing
-def multi2single(data):
+#Pre-Processing - multi line value
+def multi2single(path):
 
-	sample = data.collect()[2:]
+	data = sc.textFile(path).collect()[:]
+
+	temp = []
+
+	for d in data:
+
+		if len(d) > 1:
+			try:
+				temp.append(str(d).replace('\x00',''))
+			except:
+				temp.append(str(d.encode('utf8')).replace('\x00',''))
 	
 	ind = 0
 	while(True):
-		if ind == len(sample):
+		if ind == len(temp):
 			break
-		if len(sample[ind]) >= 1 and str(sample[ind])[-1] == '\\':
-			sample[ind] = sample[ind][:-1]+sample[ind+1][2:]
-			del sample[ind+1]
+		if len(temp[ind]) >= 1 and str(temp[ind])[-1] == '\\':
+			temp[ind] = temp[ind][:-1]+temp[ind+1][2:]
+			del temp[ind+1]
 		else:
 			ind += 1
 
-	return sample
+	return temp
 
 
 
 #Pre-Processing
-def mk_unit(data):
+def mk_unit(path):
 
-	sample = multi2single(data)
+	sample = multi2single(path)
 
 	data = []
 
 	ind = 0
 	while(True):
+
 		if ind >= len(sample):
 			break
-		if len(sample[ind]) != 0 and str(sample[ind])[0] == '[':
-			temp = []
-			k = ind
+
+		if str(sample[ind])[0] == '[':
+
+			temp = [str(sample[ind])]
+			k = ind+1
+
 			while(True):
-				if k >= len(sample) or len(sample[k]) == 0:
+				if k >= len(sample) or sample[k][0] == '[':
 					break
 				else:
 					temp.append(str(sample[k]))
 					k += 1
+			
 			data.append(temp)
-			ind = k+1
+			ind = k
 		else:
 			ind += 1
 
@@ -63,8 +78,10 @@ def mk_unit(data):
 def reg2dict(data):
 
 	if '=' in data:
-		value_name = 'default' if data.split('=')[0].split('\\')[-1] == '@' else data.split('=')[0].split('\\')[-1][1:-1]
-		value_data = data.split('=')[1] if str(data.split('=')[1])[0] != '"' else data.split('=')[1][1:-1]
+		value_name = 'default' if data.split('=')[0].split('\\')[-1] == '@'
+else data.split('=')[0].split('\\')[-1][1:-1]
+		value_data = data.split('=')[1] if str(data.split('=')[1])[0] != '"'
+else data.split('=')[1][1:-1]
 		values = [{value_name : value_data}]
 		keys = data.split('=')[0].split('\\')[:-1]
 	else:
@@ -117,47 +134,49 @@ def dict_reduce(x,y):
 
 #keyword search
 
-def search(keyword,data,loc,result):
+def search(keyword, map_data):
 
-       keys = list(data.keys())
+	result = []
 
-       for key in keys:
+	data = map_data.collect()[:]
 
-       	if type(data[key]) == str:
-                       if keyword in data[key]:
-                               if len(loc) >= 1:
-                                       result.append({loc+'\\'+key :
-data[key]})
-                               else:
-                                       result.append({key : data[key]})
+	for d in data:
+		if keyword in str(d):
+			result.append(d)
 
-               else:
-                       if len(loc) >= 1:
-                               search(keyword,data[key],loc+'\\'+key,result)
-                       else:
-                               search(keyword,data[key],key,result)
+	return result
 
-       return result
+
+	
+	
+
 
 
 if __name__ == "__main__":
-
+	
+	#setting
 	sc = SparkContext()
+	partition_size = 4
+	path = '/user/cloudera/test/HKEY_CLASSES_ROOT.reg'
+	keyword = 'sys' 
 
-	
 
-	partition_size = 20
+	#map
+	map_data = sc.parallelize(mk_unit(path))flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(partition_size).
 
-	temp_data = sc.textFile('/user/cloudera/sample/sample.reg').repartition(partition_size)
 
-	
-	data = sc.parallelize(mk_unit(temp_data)).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).reduce(lambda x,y : dict_reduce(x,y))
 
 
 	start_time = time.time()
 
-	search('sys',data,'',[])
+
+	#reduce
+	final_data = map_data.filter(lambda x : keyword in str(x)).reduce(lambda x,y : dict_reduce(x,y))
+	final_data = sc.parallelize(search(keyword,map_data)).reduce(lambda x,y : dict_reduce(x,y))
+
 
 	finish_time = time.time()
-	
-	print("time : "+str(finish_time - start_time))
+
+
+	#print("Number of Partition : "+str(map_data.getNumPartitions())+"Time : "+str(finish_time - start_time))
+	print("   Time : "+str(finish_time - start_time))

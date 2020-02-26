@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # print(enumvalue(openkey(key)))
 
     #keyword search
-    with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/HKEY_LOCAL_MACHINE.json') as json_file: 
+    with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/HKEY_CLASSES_ROOT.json') as json_file: 
         data = json.load(json_file) 
 
     keywords = ['sys','exe','file']
@@ -142,3 +142,7 @@ if __name__ == "__main__":
     #time
     finish_time = time.time()
     print("time : "+str(finish_time-start_time))
+
+key = list(data['HKEY_CLASSES_ROOT']['*'].keys())[17]
+print(key)
+len(data['HKEY_CLASSES_ROOT']['*'][key])

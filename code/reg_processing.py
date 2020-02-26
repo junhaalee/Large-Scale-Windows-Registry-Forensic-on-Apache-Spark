@@ -68,3 +68,5 @@ if __name__ == "__main__":
 
     result = mkunit(path)
 
+c = {'b':{'c':'ccc','d':{'e':'eee'}}}
+d = {'b':{'d':{'f':'fff'}}}
