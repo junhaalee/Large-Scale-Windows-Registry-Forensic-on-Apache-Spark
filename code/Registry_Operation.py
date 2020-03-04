@@ -1,26 +1,6 @@
 import json
 import time
-
-
-'''
-Structure
-
-1.	QueryKey
-    Input : Key
-    Output : # of subkeys / value pairs
-
-2.	QueryValue - Done
-    Input : Key, Value name
-    Output : Value data
-
-3.	EnumKey
-    Input : Key
-    Output : subkeys
-
-4.	EnumValue
-    Input : Key
-    Output : value pairs
-'''
+import multiprocessing
 
 
 def openkey(key):
@@ -86,6 +66,69 @@ def enumvalue(key):
 
 
 
+def mkunit(path):
+
+    f = open(path, 'r')
+
+    # 첫째 줄에 있는 data는 사용X    
+    with open(path, 'r', encoding='utf-16') as f:
+        data = f.read().split("\n\n")[1:]
+
+    result = []
+    for sample in data:
+        temp = multi2single(sample)
+        result.append(temp)
+
+    #key-value_name-value_data 묶어주기
+    data = []
+    ind = 0
+    while(True):
+        if ind >= len(result):
+            break
+        if len(result[ind]) != 0 :
+            temp = []
+            k = ind
+            while(True):
+                if k >= len(result) or len(result[k]) == 0:
+                    break
+                else:
+                    temp.append(result[k])
+                    k+=1
+            data += temp
+            ind = k+1
+        else:
+            ind += 1
+    
+    #key-value single-line으로 묶어주기
+    result = []
+    for d in data:
+        if len(d) == 1:
+            result.append(d[0][1:-1])
+        else:
+            for ind in range(1, len(d)):
+                result.append(d[0][1:-1]+'\\'+d[ind])
+    
+    return result
+
+
+def multi2single(sample):
+
+    sample = sample.split('\n')
+
+    ind = 0
+    while(True):
+        if ind == len(sample):
+            break
+        if sample[ind].endswith('\\'):
+            sample[ind] = sample[ind][:-1]+sample[ind+1][2:]
+            del sample[ind+1]
+        else:
+            ind += 1
+            
+    return sample
+
+
+'''
 def keyword_search(keyword,data,loc,result):
 
     keys = list(data.keys())
@@ -106,43 +149,53 @@ def keyword_search(keyword,data,loc,result):
                 keyword_search(keyword,data[key],key,result)
     
     return result
+'''
+
+
+def keyword_search(temp):
+    keyword = 'sys'
+    result = []
+    for t in temp:
+        if keyword in t:
+            result.append(t)
+
 
 
 
 if __name__ == "__main__":
     
-    start_time = time.time()
+    path = "/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/registry.reg"
+    result = mkunit(path)
 
-    #setting
-    key = ''
-    value_name = ''
+    n = int(input())
 
-    # #openkey -> querykey
-    # print(querykey(openkey(key))[0])
-    # print(querykey(openkey(key))[1])
+    reg_list = []
+    size = len(result)//n
 
-    # #openkey -> queryvalue -> closekey
-    # print(queryvalue(openkey(key), value_name))
+    i = 0
+    while(True):
+        if len(reg_list) == n-1:
+            reg_list.append(result[i:])
+            break
+        else:
+            reg_list.append(result[i:i+size])
+            i += size
+    
 
-    # #openkey -> enumkey
-    # print(enumkey(openkey(key)))
+    for _ in range(10):
+        pool = multiprocessing.Pool(processes=n)
 
-    # #openkey -> enumvalue
-    # print(enumvalue(openkey(key)))
+        start_time = time.time()
+        
+        pool.map(keyword_search,reg_list)    
+        
+        finish_time = time.time()
 
-    #keyword search
-    with open('/Users/junha/Documents/Junha/Study/Bigbase/Registry_MapReduce/data/HKEY_CLASSES_ROOT.json') as json_file: 
-        data = json.load(json_file) 
+        pool.close()
+        pool.join()
 
-    keywords = ['sys','exe','file']
+        print(finish_time-start_time)
 
-    for keyword in keywords:
-        keyword_search(keyword,data,'',[])
 
-    #time
-    finish_time = time.time()
-    print("time : "+str(finish_time-start_time))
 
-key = list(data['HKEY_CLASSES_ROOT']['*'].keys())[17]
-print(key)
-len(data['HKEY_CLASSES_ROOT']['*'][key])
+

@@ -78,10 +78,8 @@ def mk_unit(path):
 def reg2dict(data):
 
 	if '=' in data:
-		value_name = 'default' if data.split('=')[0].split('\\')[-1] == '@'
-else data.split('=')[0].split('\\')[-1][1:-1]
-		value_data = data.split('=')[1] if str(data.split('=')[1])[0] != '"'
-else data.split('=')[1][1:-1]
+		value_name = 'default' if data.split('=')[0].split('\\')[-1] == '@' else data.split('=')[0].split('\\')[-1][1:-1]
+		value_data = data.split('=')[1] if str(data.split('=')[1])[0] != '"' else data.split('=')[1][1:-1]
 		values = [{value_name : value_data}]
 		keys = data.split('=')[0].split('\\')[:-1]
 	else:
@@ -94,8 +92,6 @@ else data.split('=')[1][1:-1]
 		key_value[i] = { key_value[i] : key_value[i+1] }
 
 	return key_value[0]
-
-
 
 		
 
@@ -131,52 +127,35 @@ def dict_reduce(x,y):
 	return result
 
 	
-
-#keyword search
-
-def search(keyword, map_data):
-
-	result = []
-
-	data = map_data.collect()[:]
-
-	for d in data:
-		if keyword in str(d):
-			result.append(d)
-
-	return result
-
-
 	
 	
 
 
 
 if __name__ == "__main__":
-	
+
+
 	#setting
 	sc = SparkContext()
 	partition_size = 4
-	path = '/user/cloudera/test/HKEY_CLASSES_ROOT.reg'
-	keyword = 'sys' 
+	path = '/user/cloudera/result/*'
+	keyword = 'sys'
+	
 
 
 	#map
-	map_data = sc.parallelize(mk_unit(path))flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(partition_size).
-
-
+	#map_data = sc.parallelize(mk_unit('/user/cloudera/reg/registry.reg')).flatMap(lambdax : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
+	#map_data.saveAsTextFile('/user/cloudera/result')
 
 
 	start_time = time.time()
 
-
 	#reduce
-	final_data = map_data.filter(lambda x : keyword in str(x)).reduce(lambda x,y : dict_reduce(x,y))
-	final_data = sc.parallelize(search(keyword,map_data)).reduce(lambda x,y : dict_reduce(x,y))
-
+	final_data = sc.wholeTextFiles(path).repartition(partition_size).flatMap(lambda x : str(x[1]).split('\n')).filter(lambda x : keyword in x).map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
 
 	finish_time = time.time()
 
 
-	#print("Number of Partition : "+str(map_data.getNumPartitions())+"Time : "+str(finish_time - start_time))
+	#print("Number of Partition : "+str(final_data.getNumPartitions())+"Time : "+str(finish_time - start_time))
 	print("   Time : "+str(finish_time - start_time))
+
