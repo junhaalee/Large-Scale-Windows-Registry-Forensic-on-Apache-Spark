@@ -127,35 +127,44 @@ def dict_reduce(x,y):
 	return result
 
 	
-	
+def final_index(data):
+
+	ind = 0
+	for i in range(len(data)-1,-1,-1):
+		if str(data[i]) == ':':
+			ind = i
+			break
+
+	return len(data)-ind
 	
 
 
 
 if __name__ == "__main__":
 
-
 	#setting
 	sc = SparkContext()
-	partition_size = 4
-	path = '/user/cloudera/result/*'
+	partition_size = 1
+	path = "gs://dataproc-temp-us-central1-95357184097-upqiba8m/"
 	keyword = 'sys'
 	
 
+	# #map
+	map_data = sc.parallelize(mk_unit(path+'Reg.reg')).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
+	map_data.saveAsTextFile(path+'result')
 
-	#map
-	#map_data = sc.parallelize(mk_unit('/user/cloudera/reg/registry.reg')).flatMap(lambdax : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
-	#map_data.saveAsTextFile('/user/cloudera/result')
 
 
+	final_data = sc.textFile(path+"result/*").repartition(partition_size)
 	start_time = time.time()
 
-	#reduce
-	final_data = sc.wholeTextFiles(path).repartition(partition_size).flatMap(lambda x : str(x[1]).split('\n')).filter(lambda x : keyword in x).map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
+	# keywrod search
+	data = final_data.filter(lambda x : keyword in str(x)).map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
+
+	# registry key search
+	data = final_data.filter(lambda x : keyword in x[:final_index(x)]).map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
 
 	finish_time = time.time()
+	print("Number of Partition : "+str(final_data.getNumPartitions())+"    Time : "+str(finish_time - start_time))
 
-
-	#print("Number of Partition : "+str(final_data.getNumPartitions())+"Time : "+str(finish_time - start_time))
-	print("   Time : "+str(finish_time - start_time))
 
