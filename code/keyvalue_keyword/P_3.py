@@ -145,7 +145,7 @@ if __name__ == "__main__":
 	#setting
 	sc = SparkContext()
 	partition_size = 3
-	path = "gs://dataproc-temp-us-central1-95357184097-upqiba8m/"
+	path = "gs://dataproc-temp-us-central1-804846661812-3zjzbjmn/"
 	keyword = 'sys'
 	
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 	data = final_data.filter(lambda x : keyword in str(x))#.map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
 
 	finish_time = time.time()
-	print("Number of Partition : "+str(final_data.getNumPartitions())+"    Time : "+str(finish_time - start_time)+"    Result : "+str(len(data.collect())))
+	print("Number of Partition : "+str(final_data.getNumPartitions())+"    Time : "+str((finish_time - start_time)*1000000)+"    Result : "+str(len(data.collect())))
 
 
 

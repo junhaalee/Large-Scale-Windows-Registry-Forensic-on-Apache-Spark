@@ -2,6 +2,7 @@ from pyspark import SparkContext
 import time
 
 
+
 #Pre-Processing - multi line value
 def multi2single(path):
 
@@ -79,11 +80,17 @@ def reg2dict(data):
 
 	if '=' in data:
 		value_name = 'default' if data.split('=')[0].split('\\')[-1] == '@' else data.split('=')[0].split('\\')[-1][1:-1]
-		value_data = data.split('=')[1] if str(data.split('=')[1])[0] != '"' else data.split('=')[1][1:-1]
+		
+		if str(data.split('=')[1])[0] != '"':
+			value_data = data.split('=')[1]
+		elif data.split('=')[1] == '""':
+			value_data = 'none'
+		else:
+			value_data = data.split('=')[1][1:-1]
 		values = [{value_name : value_data}]
 		keys = data.split('=')[0].split('\\')[:-1]
 	else:
-		values = [{}]
+		values = ['none']
 		keys = data.split('\\')
 	
 	key_value = keys+values
@@ -93,76 +100,73 @@ def reg2dict(data):
 
 	return key_value[0]
 
-		
 
-#reduce
-def dict_reduce(x,y):
+def forensic(ex_data,data,result):
 
-	keys = []
-	
-	check = 0
+	klist, value = [], ''
+
+	temp = data
 
 	while(True):
-		if x.values()[0].keys() != y.values()[0].keys():
-			keys.append(x.keys()[0])
-			if y.values()[0].keys()[0] in x.values()[0].keys():
-				check = 1
-			break
+		if len(temp.values()) > 0 :
+			if type(temp.values()[0]) != dict:
+				klist.append(temp.keys()[0])
+				value = temp.values()[0]
+				break
+
+			klist.append(temp.keys()[0])
+			temp = temp.values()[0]
 		else:
-			keys.append(x.keys()[0])
-			x = x.values()[0]
-			y = y.values()[0]
-
-	if check == 1:
-		x.values()[0][y.values()[0].keys()[0]].update(y.values()[0].values()[0])
-	else:
-		x.values()[0].update(y.values()[0])
-
-	result = x.values()[0]
-
-	for ind in range(len(keys)-1,-1,-1):
-
-		result = {keys[ind] : result}
-
-	return result
-
-	
-def final_index(data):
-
-	ind = 0
-	for i in range(len(data)-1,-1,-1):
-		if str(data[i]) == ':':
-			ind = i
 			break
-
-	return len(data)-ind
 	
+	ind = 0
+	ex = ex_data
+	check = True
 
+	#key
+	while(True):
+	
+		if ind == len(klist):
+			break
+	
+		if klist[ind] in ex.keys():
+			ex = ex[klist[ind]]
+		else:
+			result = 'key : '+str(data)
+			check = False
+
+		ind += 1
+
+	#value
+	if check:
+		try:
+			ex = eval(str(ex))
+			if not ex.keys() and not ex.values():
+				if value != ex:
+					result = 'value : '+str(data)
+		except:
+			if value != ex:
+				result = 'value : '+str(data)
+	return result
 
 
 if __name__ == "__main__":
 
-	#setting
+	ex_reg_path = '/user/cloudera/test/old.json'
+	new_reg_path = '/user/cloudera/test/new.reg'
+	partition_num = 1
 	sc = SparkContext()
-	partition_size = 1
-	path = "gs://dataproc-temp-us-central1-804846661812-3zjzbjmn/"
-	keyword = 'sys'
-	
 
-	# #map
-	# map_data = sc.parallelize(mk_unit(path+'Reg.reg')).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
-	# map_data.saveAsTextFile(path+'result')
+	#old data
+	data = sc.textFile(ex_reg_path).map(lambda x : eval(x)).collect()[0]
+	old_data = {data.keys()[1]:data.values()[1]}
 
-
-
-	final_data = sc.textFile(path+"result/*").repartition(partition_size)
-	start_time = time.time()
-
-	# keywrod search
-	data = final_data.filter(lambda x : keyword in str(x))#.map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
-
-	finish_time = time.time()
-	print("Number of Partition : "+str(final_data.getNumPartitions())+"    Time : "+str((finish_time - start_time)*1000000)+"    Result : "+str(len(data.collect())))
+	#new data
+	new_data = sc.parallelize(mk_unit(new_reg_path)).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x))
+	new_data.saveAsTextFile('/user/cloudera/test/new')
 
 
+	# forensic_data = sc.textFile('/user/cloudera/test/new/part-00000').flatMap(lambda x : x.split('/n')).map(lambda x : eval(x)).map(lambda x : forensic(old_data,x,''))
+
+	# forensic_data.saveAsTextFile('/user/cloudera/test/result')
 
