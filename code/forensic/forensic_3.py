@@ -152,10 +152,10 @@ def forensic(ex_data,data,result):
 
 if __name__ == "__main__":
 
+	sc = SparkContext()
 	ex_reg_path = 'gs://dataproc-temp-asia-east1-804846661812-lspxomee/old.json'
 	new_reg_path = 'gs://dataproc-temp-asia-east1-804846661812-lspxomee/new.reg'
 	partition_num = 3
-	sc = SparkContext()
 
 	#old data
 	data = sc.textFile(ex_reg_path).map(lambda x : eval(x)).collect()[0]
@@ -165,11 +165,12 @@ if __name__ == "__main__":
 	# new_data = sc.parallelize(mk_unit(new_reg_path)).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x))
 	# new_data.saveAsTextFile('gs://dataproc-temp-asia-east1-804846661812-lspxomee/new')
 
+	new_data = sc.textFile('gs://dataproc-temp-asia-east1-804846661812-lspxomee/new/*').repartition(partition_num)
+
 	start_time = time.time()
 
-	forensic_data = sc.textFile('gs://dataproc-temp-asia-east1-804846661812-lspxomee/new/part-00000').repartition(partition_num).flatMap(lambda x : x.split('/n')).map(lambda x : eval(x)).map(lambda x : forensic(old_data,x,''))
+	forensic_data = new_data.flatMap(lambda x : x.split('/n')).map(lambda x : eval(x)).map(lambda x : forensic(old_data,x,''))
 
 	finish_time = time.time()
 
 	print("Number of Partition : "+str(forensic_data.getNumPartitions())+"    Time : "+str(finish_time - start_time))
-

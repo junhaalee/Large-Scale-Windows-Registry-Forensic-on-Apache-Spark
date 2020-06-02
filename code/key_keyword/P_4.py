@@ -145,10 +145,9 @@ if __name__ == "__main__":
 	#setting
 	sc = SparkContext()
 	partition_size = 4
-	path = "gs://dataproc-temp-us-central1-804846661812-3zjzbjmn/"
+	path = "gs://dataproc-temp-asia-east1-804846661812-lspxomee/"
 	keyword = 'sys'
 	
-
 	# #map
 	# map_data = sc.parallelize(mk_unit(path+'Reg.reg')).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
 	# map_data.saveAsTextFile(path+'result')
@@ -159,9 +158,9 @@ if __name__ == "__main__":
 	start_time = time.time()
 
 	# registry key search
-	data = final_data.filter(lambda x : keyword in x[:final_index(x)])#.map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
+	data = final_data.filter(lambda x : keyword in x[:final_index(x)]).map(lambda x : eval(x)).reduce(lambda x,y : dict_reduce(x,y))
 
 	finish_time = time.time()
-	print("Number of Partition : "+str(final_data.getNumPartitions())+"    Time : "+str((finish_time - start_time)*1000000)+"    Result : "+str(len(data.collect())))
+	print("Number of Partition : "+str(final_data.getNumPartitions())+"    Time : "+str(finish_time - start_time)+"    Result : "+str(len(data.collect())))
 
 

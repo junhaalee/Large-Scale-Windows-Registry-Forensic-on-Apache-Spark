@@ -151,10 +151,10 @@ def forensic(ex_data,data,result):
 
 
 if __name__ == "__main__":
-		sc = SparkContext()
+	sc = SparkContext()
 	ex_reg_path = 'gs://dataproc-temp-asia-east1-804846661812-lspxomee/old.json'
 	new_reg_path = 'gs://dataproc-temp-asia-east1-804846661812-lspxomee/new.reg'
-	partition_num = 4
+	partition_num = 8
 
 	#old data
 	data = sc.textFile(ex_reg_path).map(lambda x : eval(x)).collect()[0]
@@ -173,3 +173,4 @@ if __name__ == "__main__":
 	finish_time = time.time()
 
 	print("Number of Partition : "+str(forensic_data.getNumPartitions())+"    Time : "+str(finish_time - start_time))
+

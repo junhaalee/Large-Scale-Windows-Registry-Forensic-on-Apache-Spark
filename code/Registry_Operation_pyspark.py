@@ -149,7 +149,7 @@ if __name__ == "__main__":
 	keyword = 'sys'
 	
 
-	# #map
+	#map
 	map_data = sc.parallelize(mk_unit(path+'Reg.reg')).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
 	map_data.saveAsTextFile(path+'result')
 
