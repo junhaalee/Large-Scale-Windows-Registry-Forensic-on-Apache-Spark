@@ -93,9 +93,12 @@ def reg2dict(data):
 
 	return key_value[0]
 
-		
-
+	
 #reduce
+
+x = {'HKCC' : {'System' : {'CurrentA' : 'control'}}}
+y = {'HKCC' : {'System' : {'CurrentB' : 'setting'}}}
+
 def dict_reduce(x,y):
 
 	keys = []
@@ -103,22 +106,22 @@ def dict_reduce(x,y):
 	check = 0
 
 	while(True):
-		if x.values()[0].keys() != y.values()[0].keys():
-			keys.append(x.keys()[0])
-			if y.values()[0].keys()[0] in x.values()[0].keys():
+		if list(x.values())[0].keys() != list(y.values())[0].keys():
+			keys.append(list(x.keys())[0])
+			if list(list(y.values())[0].keys())[0] in list(list(x.values())[0].keys()):
 				check = 1
 			break
 		else:
-			keys.append(x.keys()[0])
-			x = x.values()[0]
-			y = y.values()[0]
+			keys.append(list(x.keys())[0])
+			x = list(x.values())[0]
+			y = list(y.values())[0]
 
 	if check == 1:
 		x.values()[0][y.values()[0].keys()[0]].update(y.values()[0].values()[0])
 	else:
-		x.values()[0].update(y.values()[0])
+		list(x.values())[0].update(list(y.values())[0])
 
-	result = x.values()[0]
+	result = list(x.values())[0]
 
 	for ind in range(len(keys)-1,-1,-1):
 
@@ -144,15 +147,20 @@ if __name__ == "__main__":
 
 	#setting
 	sc = SparkContext()
-	path = "gs://dataproc-staging-us-central1-804846661812-co20amrx/"
+	path = "gs://dataproc-staging-asia-east1-804846661812-k5oy6idn/"
 	keyword = 'sys'
 	
-	
+	start_time = time.time()
 
 	# #map
-	map_data = sc.parallelize(mk_unit(path+'Reg.reg')).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x)).repartition(16)
+	map_data = sc.parallelize(mk_unit(path+'test.reg')).flatMap(lambda x : x.split('/n')).map(lambda x : reg2dict(x))#.reduce(lambda x,y : dict_reduce(x,y)).repartition(8)
+	# sc.parallelize(map_data).saveAsTextFile(path+'result')
 	map_data.saveAsTextFile(path+'result')
 
+	finish_time = time.time()
+
+
+	print("Time : "+str(finish_time - start_time))
 
 
 	# final_data = sc.textFile(path+"result/*").repartition(partition_size)
