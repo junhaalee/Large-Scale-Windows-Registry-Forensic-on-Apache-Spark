@@ -7,6 +7,9 @@
 
 ## Contents
 
+- [Material](https://github.com/junhaalee/registry_Forensic/tree/master/Material)
+	- 논문 구성 자료
+
 - [Code](https://github.com/junhaalee/registry_Forensic/tree/master/code)
 	
 	- [Experiment - Partition 개수 및 Node 개수를 다르게 설정한 Operation](https://github.com/junhaalee/registry_Forensic/tree/master/code/Experiment)
@@ -28,3 +31,4 @@
 		- forensic_pyspark : 분산환경에서 둘 이상의 전체 레지스트리 파일을 비교.
 
 	- [Setting - GCP에서 실험을 진행하기 위한 Setting 파일](https://github.com/junhaalee/registry_Forensic/tree/master/code/Setting)
+
